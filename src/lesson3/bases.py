@@ -27,7 +27,7 @@ class GenericCommand(ABC):
 
 class DynamicInterfaceObject(SimpleNamespace):
     """Объект-свалка для склейки разнородных реализаций интерфейсов"""
-    def absorb(self, obj: GenericInterface) -> None:
+    def absorb(self, obj: GenericInterface) -> DynamicInterfaceObject:
         """Поглотить объект - перенести в себя методы и свойства"""
         def to_method(obj: Any, meth: Callable) -> Callable:
             @wraps(meth)
@@ -47,5 +47,5 @@ class DynamicInterfaceObject(SimpleNamespace):
                 if hasattr(self, k):
                     continue
                 setattr(self, k, to_method(obj,v))
-        return
+        return self
 

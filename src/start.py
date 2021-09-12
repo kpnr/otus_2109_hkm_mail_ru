@@ -2,7 +2,7 @@
 
 from lesson3.bases import DynamicInterfaceObject
 from lesson3.implementations import (
-    Position, Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
+    Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
     RotationCommand
     )
 from pprint import pprint

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import Any, cast
-from .bases import GenericCommand
+from .bases import GenericCommand, DynamicInterfaceObject
 from .interfaces import (PositionedInterface, SpaceDirectionInterface,
                          MovableInterface, SpaceVectorInterface)
 from math import sin, cos
@@ -97,3 +97,7 @@ class SpaceDirection(SpaceDirectionInterface):
     def direction_set(self, new_dir: SpaceVectorInterface) -> None :
         self.direction = new_dir
         return
+
+
+class Tank(DynamicInterfaceObject):
+    """Танк. Никаких спецсвойств (пока) не имеет"""
