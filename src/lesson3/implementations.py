@@ -5,18 +5,29 @@ from typing import Any, cast
 from .bases import GenericCommand
 from .interfaces import (PositionedInterface, SpaceDirectionInterface,
                          MovableInterface, SpaceVectorInterface)
+from math import sin, cos
 
 
 class SpaceVector2(SpaceVectorInterface):
     """Двумерный вектор"""
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: float, y: float):
         self.x, self.y = x, y
 
-    def increase(self, other: SpaceVectorInterface) -> SpaceVectorInterface:
+    def move_by(self, other: SpaceVectorInterface) -> SpaceVectorInterface:
         """Сложение по правилу параллеограмма"""
         if not isinstance(other, self.__class__):
-            raise TypeError('Can not increase such vector', self, other)
+            raise TypeError('Can not move such vector', self, other)
         rv = SpaceVector2(self.x + other.x, self.y + other.y)
+        return rv
+
+    def rotate(self, rotation: SpaceVectorInterface) -> SpaceVectorInterface:
+        """Вращение на угол rotation.x*rotation.y радиан"""
+        if not isinstance(rotation, self.__class__):
+            raise TypeError('Can not rotate such vector', self, rotation)
+        angle = rotation.x * rotation.y
+        x, y = self.x, self.y
+        rv = SpaceVector2(x * cos(angle) - y * sin(angle),
+                          x * sin(angle) + y * cos(angle))
         return rv
 
 
@@ -33,9 +44,25 @@ class StraightMoveCommand(GenericCommand):
         obj = self.receiver
         position = cast(PositionedInterface, obj).position_get()
         speed = cast(SpaceDirectionInterface, obj).direction_get()
-        position = position.increase(speed)
+        position = position.move_by(speed)
         cast(MovableInterface, obj).position_set(position)
         return
+
+
+# noinspection PyMissingOrEmptyDocstring
+class RotationCommand(GenericCommand):
+    """Поворот объектов, обладающих направленностью"""
+    def __init__(self, receiver: Any):
+        obj, rotation = receiver
+        SpaceDirectionInterface._assert_support(obj)
+        SpaceVectorInterface._assert_support(rotation)
+        self.receiver = receiver
+
+    def execute(self) -> None:
+        obj, rotation = self.receiver
+        direction = cast(SpaceDirectionInterface, obj).direction_get()
+        direction = direction.rotate(rotation)
+        cast(SpaceDirectionInterface, obj).direction_set(direction)
 
 
 # noinspection PyMissingOrEmptyDocstring

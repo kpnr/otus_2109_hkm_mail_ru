@@ -32,7 +32,7 @@ class DynamicInterfaceObject(SimpleNamespace):
         def to_method(obj: Any, meth: Callable) -> Callable:
             @wraps(meth)
             def f(*args, **kwargs):
-                rv = meth(obj, *args, **kwargs)
+                rv = meth(self, *args, **kwargs)
                 return rv
             return f
         for k, v in obj.__dict__.items():

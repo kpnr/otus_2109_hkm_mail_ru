@@ -5,13 +5,6 @@ from typing import Any, Type
 from abc import ABC, abstractmethod
 
 
-class SpaceVectorInterface(ABC):
-    """Вектор положения/скорости/вращения в пространстве"""
-    @abstractmethod
-    def increase(self, other: SpaceVectorInterface) -> SpaceVectorInterface:
-        """Сложение двух векторов"""
-
-
 class GenericInterface(ABC):
     """Обобщенный интерфейс"""
     @classmethod
@@ -23,6 +16,23 @@ class GenericInterface(ABC):
     def _not_supported_error(itf_class: Type[GenericInterface], obj: Any):
         """Создание исключения неподдерживаемого интерфейса"""
         raise TypeError('Interface not supported', itf_class, obj)
+
+
+class SpaceVectorInterface(GenericInterface):
+    """Вектор положения/скорости/вращения в пространстве"""
+    @classmethod
+    def _assert_support(cls, obj: Any) -> None:
+        """Проверка подержки интерфейса"""
+        if not (callable(obj.move_by) and callable(obj.rotate)):
+            cls._not_supported_error(cls, obj)
+
+    @abstractmethod
+    def move_by(self, other: SpaceVectorInterface) -> SpaceVectorInterface:
+        """Сложение двух векторов"""
+
+    @abstractmethod
+    def rotate(self, rotation: SpaceVectorInterface) -> SpaceVectorInterface:
+        """Вращение вектора"""
 
 
 class PositionedInterface(GenericInterface):
