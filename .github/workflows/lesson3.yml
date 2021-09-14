@@ -2,6 +2,7 @@ name: lesson3_ci
 on: [push]
 jobs:
   test:
+    runs-on: ubuntu-latest
     steps:
       - name: env_prepare
         run: |
