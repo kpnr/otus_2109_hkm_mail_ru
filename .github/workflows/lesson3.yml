@@ -1,0 +1,12 @@
+name: lesson3_ci
+on: [push]
+jobs:
+  test:
+    steps:
+      - name: env_prepare
+        run: |
+          python -m pip install -r ./requirements_ci.txt
+      - name: tests_do
+        run: |
+          cd ./src
+          python -m pytest .. -v
