@@ -1,0 +1,23 @@
+name: lesson3_ci
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: python_prepare
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: env_prepare
+        run: |
+          pwd
+          ls -l
+          python -m pip install -r requirements_ci.txt
+      - name: tests_do
+        run: |
+          cd src
+          python -m pytest .. -v
