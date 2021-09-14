@@ -8,8 +8,8 @@ jobs:
         run: |
           pwd
           ls -l
-          python -m pip install -r ./requirements_ci.txt
+          python -m pip install -r requirements_ci.txt
       - name: tests_do
         run: |
-          cd ./src
+          cd src
           python -m pytest .. -v
