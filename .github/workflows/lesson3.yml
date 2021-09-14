@@ -7,7 +7,7 @@ jobs:
       - name: env_prepare
         run: |
           pwd
-          ls -l .
+          ls -l
           python -m pip install -r ./requirements_ci.txt
       - name: tests_do
         run: |
