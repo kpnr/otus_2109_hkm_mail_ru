@@ -78,3 +78,19 @@ class SpaceDirectionInterface(GenericInterface):
     @abstractmethod
     def direction_set(self, new_dir: SpaceVectorInterface) -> None :
         """Установка направления"""
+
+
+class GenericCommand(ABC):
+    """Комманда, производящая действия над объектом(-ами)"""
+
+    def __init__(self, receiver: Any):
+        """
+        Создание команды
+        :param receiver: Объект(-ы) на который действует команда и ее параметры
+        :type receiver: instance
+        """
+        self.receiver = receiver
+
+    @abstractmethod
+    def execute(self) -> None:
+        """Непосредственное выполнение команды"""
