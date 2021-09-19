@@ -3,7 +3,7 @@
 import pytest
 
 from lesson3.implementations import (
-    Tank, Position,Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
+    Tank, Position, Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
     RotationCommand
     )
 from math import pi
