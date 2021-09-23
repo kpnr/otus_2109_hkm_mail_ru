@@ -1,6 +1,6 @@
 """Запускаемый модуль"""
 
-from lesson3.bases import DynamicInterfaceObject
+from lesson3.interfaces import DynamicInterfaceObject
 from lesson3.implementations import (
     Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
     RotationCommand

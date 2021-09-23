@@ -1,7 +1,10 @@
 """Интерфейсы объектов игры"""
 
 from __future__ import annotations
-from typing import Any, Type
+
+from functools import wraps
+from types import SimpleNamespace
+from typing import Any, Callable, Type
 from abc import ABC, abstractmethod
 
 
@@ -94,3 +97,31 @@ class GenericCommand(ABC):
     @abstractmethod
     def execute(self) -> None:
         """Непосредственное выполнение команды"""
+
+
+class DynamicInterfaceObject(SimpleNamespace):
+    """Объект-свалка для склейки разнородных реализаций интерфейсов"""
+    def absorb(self, obj: GenericInterface) -> DynamicInterfaceObject:
+        """Поглотить объект - перенести в себя методы и свойства"""
+        def to_method(meth: Callable) -> Callable:
+            """Привязка метода интерфейса с себе. Грязный хак - ломает super()"""
+            @wraps(meth)
+            def f(*args, **kwargs):
+                """Сам перепривязанный метод"""
+                rv = meth(self, *args, **kwargs)
+                return rv
+            return f
+
+        for k, v in obj.__dict__.items():
+            if hasattr(self, k):
+                raise AttributeError(f'Attribute {k} already defined',
+                                     self, obj)
+            setattr(self, k, v)
+        for class_obj in obj.__class__.__mro__:
+            for k, v in class_obj.__dict__.items():
+                if k.startswith('_'):
+                    continue
+                if hasattr(self, k):
+                    continue
+                setattr(self, k, to_method(v))
+        return self

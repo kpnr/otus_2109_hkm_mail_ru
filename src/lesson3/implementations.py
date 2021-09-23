@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 from typing import Any, cast
-from .bases import DynamicInterfaceObject
-from .interfaces import (GenericCommand, PositionedInterface, SpaceDirectionInterface,
+from .interfaces import (DynamicInterfaceObject, GenericCommand, PositionedInterface, SpaceDirectionInterface,
                          MovableInterface, SpaceVectorInterface)
 from math import sin, cos
 
