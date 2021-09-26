@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import Any, cast
-from .interfaces import (DynamicInterfaceObject, GenericCommand, PositionedInterface, SpaceDirectionInterface,
+from .interfaces import (UObject, GenericCommand, SpaceDirectionInterface,
                          MovableInterface, SpaceVectorInterface)
 from math import sin, cos
 
@@ -30,42 +30,8 @@ class SpaceVector2(SpaceVectorInterface):
         return rv
 
 
-class StraightMoveCommand(GenericCommand):
-    """Передвижение объекта основываясь на его текущем положении и скорости"""
-    def __init__(self, receiver: Any):
-        """Перемещаем только объекты на поле боя"""
-        MovableInterface._assert_support(receiver)
-        SpaceDirectionInterface._assert_support(receiver)
-        super().__init__(receiver)
-
-    def execute(self) -> None:
-        """Непосредственное перемещение объекта"""
-        obj = self.receiver
-        position = cast(PositionedInterface, obj).position_get()
-        speed = cast(SpaceDirectionInterface, obj).direction_get()
-        position = position.move_by(speed)
-        cast(MovableInterface, obj).position_set(position)
-        return
-
-
 # noinspection PyMissingOrEmptyDocstring
-class RotationCommand(GenericCommand):
-    """Поворот объектов, обладающих направленностью"""
-    def __init__(self, receiver: Any):
-        obj, rotation = receiver
-        SpaceDirectionInterface._assert_support(obj)
-        SpaceVectorInterface._assert_support(rotation)
-        self.receiver = receiver
-
-    def execute(self) -> None:
-        obj, rotation = self.receiver
-        direction = cast(SpaceDirectionInterface, obj).direction_get()
-        direction = direction.rotate(rotation)
-        cast(SpaceDirectionInterface, obj).direction_set(direction)
-
-
-# noinspection PyMissingOrEmptyDocstring
-class Position(PositionedInterface):
+class FixedPosition(MovableInterface):
     """Объект-позиция"""
     def __init__(self, position: SpaceVectorInterface):
         self.position = position
@@ -74,10 +40,20 @@ class Position(PositionedInterface):
         rv = self.position
         return rv
 
+    def position_set(self, new_pos: SpaceVectorInterface) -> None:
+        raise RuntimeError("Запрещено изменение позиции объекта.")
+
 
 # noinspection PyMissingOrEmptyDocstring
-class Movable(Position, MovableInterface):
+class Movable(MovableInterface):
     """Объект, позволяющий изменять позицию"""
+    def __init__(self, position: SpaceVectorInterface):
+        self.position = position
+
+    def position_get(self) -> SpaceVectorInterface:
+        rv = self.position
+        return rv
+
     def position_set(self, new_pos: SpaceVectorInterface) -> None:
         self.position = new_pos
         return
@@ -98,5 +74,59 @@ class SpaceDirection(SpaceDirectionInterface):
         return
 
 
-class Tank(DynamicInterfaceObject):
+class StraightMoveAdapter:
+    """Перемещение из текущей позиции в текущем направлении"""
+    def __init__(self, obj: UObject):
+        MovableInterface._assert_support(obj)
+        SpaceDirectionInterface._assert_support(obj)
+        self.obj = obj
+
+    def move(self) -> None:
+        """Осуществить перемещение"""
+        speed = cast(SpaceDirectionInterface, self.obj).direction_get()
+        position = cast(MovableInterface, self.obj).position_get()
+        new_position = position.move_by(speed)
+        self.obj.position_set(new_position)
+
+
+class RotationAdapter:
+    """Вращение объекта"""
+    def __init__(self, obj: UObject, rotation: SpaceVectorInterface):
+        SpaceDirectionInterface._assert_support(obj)
+        self.obj = cast(SpaceDirectionInterface, obj)
+        self.rotation = rotation
+
+    def rotate(self) -> None:
+        """Осуществить вращение"""
+        direction = self.obj.direction_get()
+        new_direction = direction.rotate(self.rotation)
+        self.obj.direction_set(new_direction)
+
+
+class StraightMoveCommand(GenericCommand):
+    """Передвижение объекта основываясь на его текущем положении и скорости"""
+    def __init__(self, receiver: Any):
+        """Перемещаем только объекты на поле боя"""
+        adapter = StraightMoveAdapter(receiver)
+        super().__init__(adapter)
+
+    def execute(self) -> None:
+        """Непосредственное перемещение объекта"""
+        self.receiver.move()
+        return
+
+
+# noinspection PyMissingOrEmptyDocstring
+class RotationCommand(GenericCommand):
+    """Поворот объектов, обладающих направленностью"""
+    def __init__(self, receiver: Any):
+        obj, rotation = receiver
+        adapter = RotationAdapter(obj, rotation)
+        super().__init__(adapter)
+
+    def execute(self) -> None:
+        self.receiver.rotate()
+
+
+class Tank(UObject):
     """Танк. Никаких спецсвойств (пока) не имеет"""

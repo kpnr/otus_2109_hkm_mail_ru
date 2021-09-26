@@ -38,28 +38,20 @@ class SpaceVectorInterface(GenericInterface):
         """Вращение вектора"""
 
 
-class PositionedInterface(GenericInterface):
-    """Объект, имеющий позицию в пространстве"""
-    @classmethod
-    def _assert_support(cls, obj: Any) -> None:
-        """Проверка подержки интерфейса"""
-        if not callable(obj.position_get):
-            cls._not_supported_error(cls, obj)
-
-    @abstractmethod
-    def position_get(self) -> SpaceVectorInterface:
-        """Получение положения"""
-
-
-class MovableInterface(PositionedInterface):
+class MovableInterface(GenericInterface):
     """Объект, допускающий изменние позиции в пространстве"""
 
     @classmethod
     def _assert_support(cls, obj: Any) -> None:
         """Проверка подержки интерфейса"""
-        super()._assert_support(obj)
+        if not callable(obj.position_get):
+            cls._not_supported_error(cls, obj)
         if not callable(obj.position_set):
             cls._not_supported_error(cls, obj)
+
+    @abstractmethod
+    def position_get(self) -> SpaceVectorInterface:
+        """Получение положения"""
 
     @abstractmethod
     def position_set(self, new_pos: SpaceVectorInterface) -> None :
@@ -99,9 +91,9 @@ class GenericCommand(ABC):
         """Непосредственное выполнение команды"""
 
 
-class DynamicInterfaceObject(SimpleNamespace):
+class UObject(SimpleNamespace):
     """Объект-свалка для склейки разнородных реализаций интерфейсов"""
-    def absorb(self, obj: GenericInterface) -> DynamicInterfaceObject:
+    def absorb(self, obj: GenericInterface) -> UObject:
         """Поглотить объект - перенести в себя методы и свойства"""
         def to_method(meth: Callable) -> Callable:
             """Привязка метода интерфейса с себе. Грязный хак - ломает super()"""
