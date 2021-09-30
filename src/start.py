@@ -1,6 +1,6 @@
 """Запускаемый модуль"""
 
-from lesson3.bases import DynamicInterfaceObject
+from lesson3.interfaces import UObject
 from lesson3.implementations import (
     Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
     RotationCommand
@@ -8,7 +8,7 @@ from lesson3.implementations import (
 from pprint import pprint
 from math import pi
 
-tank = DynamicInterfaceObject()
+tank = UObject()
 pos = Movable(SpaceVector2(12.0, 5.0))
 speed = SpaceDirection(SpaceVector2(-7.0, 3.0))
 tank.absorb(pos)

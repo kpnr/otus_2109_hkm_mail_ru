@@ -7,7 +7,6 @@ from lesson4.implemetations import (ThreadedAttractorStartCommand,
                                     ThreadedAttractor,
                                     ThreadedQueue)
 from threading import Thread
-from time import sleep
 from queue import Queue
 
 
@@ -32,7 +31,7 @@ def test_start_command():
     assert isinstance(attractor, Thread)
     assert attractor.is_alive()
     queue.write(cmd)
-    sleep(1.0)
+    attractor.join(10.0)
     assert not attractor.is_alive()
 
 
