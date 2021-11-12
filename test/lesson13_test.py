@@ -6,8 +6,8 @@ from lesson13.implementations import (
     CommandException, MacroCommand)
 
 
-class TestCommand(GenericCommand):
-    """Тестовая команда"""
+class CallbackCommand(GenericCommand):
+    """Тестовая команда-callback"""
     def __init__(self, receiver: Callable):
         super().__init__(receiver)
 
@@ -18,7 +18,7 @@ class TestCommand(GenericCommand):
 def test_CommandException():
     """Проверим структуру CommandException"""
     try:
-        cmd = TestCommand(lambda: None)
+        cmd = CallbackCommand(lambda: None)
         raise CommandException(cmd)
     except CommandException as e:
         assert e.command is cmd and len(e.args) == 1 and e.args[0] is cmd
@@ -32,8 +32,8 @@ def test_MacroCommand():
         target += s
 
     target = 'Lesson_'
-    cmd1 = TestCommand(lambda: do('1'))
-    cmd2 = TestCommand(lambda: do('3'))
+    cmd1 = CallbackCommand(lambda: do('1'))
+    cmd2 = CallbackCommand(lambda: do('3'))
     macro = MacroCommand([cmd1, cmd2])
     macro.execute()
     assert target == 'Lesson_13'
