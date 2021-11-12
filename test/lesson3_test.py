@@ -3,19 +3,20 @@
 import pytest
 
 from lesson3.implementations import (
-    Tank, Position, Movable, SpaceVector2, SpaceDirection, StraightMoveCommand,
-    RotationCommand
+    Tank, FixedPosition, Movable, SpaceVector2, SpaceDirection,
+    StraightMoveCommand, RotationCommand
     )
 from math import pi
 
 
 def create_objects():
+    """Рутинное создание объектов для теста. Хотя правильнее сделать фикстуру"""
     rv = (
         Tank(),
         Movable(SpaceVector2(12.0, 5.0)),
         SpaceDirection(SpaceVector2(-7.0, 3.0)),
         SpaceVector2(90, pi/180)
-    )
+        )
     return rv
 
 
@@ -51,10 +52,10 @@ def test_not_directed():
 
 def test_fixed_pos():
     tank, _, speed, _ = create_objects()
-    pos = Position(SpaceVector2(12.0, 5.0))
+    pos = FixedPosition(SpaceVector2(12.0, 5.0))
     tank.absorb(pos).absorb(speed)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(RuntimeError):
         move_command = StraightMoveCommand(tank)
         move_command.execute()
 
