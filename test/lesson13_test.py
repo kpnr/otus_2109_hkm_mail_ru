@@ -3,11 +3,11 @@
 from typing import Callable, cast
 from pytest import raises, approx
 from lesson3.interfaces import GenericCommand
-from lesson3.implementations import Tank
+from lesson3.implementations import Tank, Movable, SpaceDirection
 from lesson13.interfaces import FuelInterface
 from lesson13.implementations import (
     CommandException, MacroCommand, CheckFuelCommand, BurnFuelCommand,
-    LinearVector2)
+    LinearVector2, StraightMoveWithFuelCommand)
 
 
 class CallbackCommand(GenericCommand):
@@ -92,3 +92,20 @@ def test_BurnFuelCommand():
     cmd = BurnFuelCommand(cast(FuelInterface, vehicle), movement)
     cmd.execute()
     assert cast(FuelInterface, vehicle).fuel_quantity_get() == approx(0.0)
+
+
+def test_StraitMoveWithFuelCommand():
+    """Тест перемещения с топливом"""
+    vehicle = Tank()
+    vehicle.absorb(Vehicle())
+    position = LinearVector2(1.0, 1.0)
+    vehicle.absorb(Movable(position))
+    speed = LinearVector2(3.0, 4.0)
+    vehicle.absorb(SpaceDirection(speed))
+    cmd = StraightMoveWithFuelCommand(vehicle)
+    cmd.execute()
+    position = vehicle.position_get()
+    # доехали до точки
+    assert position.x == approx(4.0) and position.y == approx(5.0)
+    # и сожгли топливо
+    assert vehicle.fuel_quantity_get() == approx(0.0)

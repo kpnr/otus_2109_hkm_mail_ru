@@ -4,7 +4,7 @@ from typing import Any, Optional, cast
 
 from lesson13.interfaces import FuelInterface, MetricVectorInterface
 from lesson3.interfaces import GenericCommand
-from lesson3.implementations import SpaceVector2
+from lesson3.implementations import SpaceVector2, StraightMoveCommand
 
 
 class CommandException(Exception):
@@ -73,3 +73,13 @@ class BurnFuelCommand(CheckFuelCommand):
         f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
         f_quantity -= self._fuel_expense_get()
         cast(FuelInterface, vehicle).fuel_quantity_set(f_quantity)
+
+
+class StraightMoveWithFuelCommand(MacroCommand):
+    """Перемещение по прямой с контролем и расходом топлива"""
+    def __init__(self, receiver: Any):
+        """:param receiver: перемещаемый объект"""
+        check = CheckFuelCommand(receiver, receiver.direction_get())
+        move = StraightMoveCommand(receiver)
+        burn = BurnFuelCommand(receiver, receiver.direction_get())
+        super().__init__((check, move, burn))
