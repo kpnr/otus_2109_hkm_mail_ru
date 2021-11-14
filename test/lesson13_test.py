@@ -1,10 +1,12 @@
 """Тесты для урока № 13"""
 
-from typing import Callable
+from typing import Callable, cast
+from pytest import raises
 from lesson3.interfaces import GenericCommand
+from lesson3.implementations import Tank
+from lesson13.interfaces import FuelInterface
 from lesson13.implementations import (
-    CommandException, MacroCommand)
-
+    CommandException, MacroCommand, CheckFuelCommand, LinearVector2)
 
 class CallbackCommand(GenericCommand):
     """Тестовая команда-callback"""
@@ -37,3 +39,40 @@ def test_MacroCommand():
     macro = MacroCommand([cmd1, cmd2])
     macro.execute()
     assert target == 'Lesson_13'
+
+
+# noinspection PyMissingOrEmptyDocstring
+class Vehicle(FuelInterface):
+    """Тестовая "машинка" для проверки уровня топлива"""
+
+    def fuel_quantity_get(self) -> float:
+        return 10.0
+
+    def fuel_quantity_set(self, quantity: float) -> None:
+        pass
+
+    def fuel_rate_get(self) -> float:
+        return 2.0
+
+    def fuel_rate_set(self, rate: float) -> float:
+        pass
+
+
+def test_CheckFuelCommand_ok():
+    """Тест выполнения для достаточного уровня топлива"""
+    movement = LinearVector2(3.0, 4.0)  # Перемещение ровно на 5 единиц
+    vehicle = Tank()
+    vehicle.absorb(Vehicle())
+    cmd = CheckFuelCommand(cast(FuelInterface, vehicle), movement)
+    cmd.execute()
+
+
+def test_CheckFuelCommand_fail():
+    """Тест выполнения для достаточного уровня топлива"""
+    movement = LinearVector2(3.01, 4.0)  # Перемещение более 5 единиц
+    vehicle = Tank()
+    vehicle.absorb(Vehicle())
+    cmd = CheckFuelCommand(cast(FuelInterface, vehicle), movement)
+    with raises(CommandException):
+        cmd.execute()
+

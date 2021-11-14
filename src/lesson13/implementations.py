@@ -2,7 +2,9 @@
 
 from typing import Any, Optional, cast
 
+from lesson13.interfaces import FuelInterface, MetricVectorInterface
 from lesson3.interfaces import GenericCommand
+from lesson3.implementations import SpaceVector2
 
 
 class CommandException(Exception):
@@ -10,6 +12,15 @@ class CommandException(Exception):
     def __init__(self, cmd: Optional[GenericCommand]):
         self.command = cmd
         super(CommandException, self).__init__(cmd)
+
+
+class LinearVector2(SpaceVector2, MetricVectorInterface):
+    """Евклидов вектор в 2D"""
+
+    def length(self) -> float:
+        """Обычная длина (по Пифагору)"""
+        rv = (self.x ** 2 + self.y ** 2) ** (1/2)
+        return rv
 
 
 # noinspection PyMissingOrEmptyDocstring
@@ -28,3 +39,19 @@ class MacroCommand(GenericCommand):
         except Exception as e:
             raise CommandException(x) from e
 
+
+class CheckFuelCommand(GenericCommand):
+    """Проверить кол-во топлива, достаточное для движения"""
+    def __init__(self, vehicle: FuelInterface, movement: MetricVectorInterface):
+        FuelInterface._assert_support(vehicle)
+        MetricVectorInterface._assert_support(movement)
+        super().__init__((vehicle, movement))
+
+    def execute(self) -> None:
+        vehicle, movement = self.receiver
+        length = cast(MetricVectorInterface, movement).length()
+        f_rate = cast(FuelInterface, vehicle).fuel_rate_get()
+        f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
+        if f_quantity < f_rate * length:
+            raise CommandException(self)
+        # Проверка уровня топлива прошла

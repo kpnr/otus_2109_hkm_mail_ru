@@ -1,10 +1,24 @@
 """Интерфейсы/абстракции"""
 from typing import Any
 from abc import abstractmethod
-from lesson3.interfaces import GenericInterface
+from lesson3.interfaces import (
+    GenericInterface, SpaceVectorInterface)
 
 
-class SimpleFuelInterface(GenericInterface):
+class MetricVectorInterface(SpaceVectorInterface):
+    """Вектор метрикой-длиной"""
+    @classmethod
+    def _assert_support(cls, obj: Any) -> None:
+        if not (callable(obj.length)):
+            cls._not_supported_error(cls, obj)
+        super(MetricVectorInterface, cls)._assert_support(obj)
+
+    @abstractmethod
+    def length(self) -> float:
+        """Получить длину вектора"""
+
+
+class FuelInterface(GenericInterface):
     """Работа с топливом"""
 
     @classmethod
@@ -30,4 +44,3 @@ class SimpleFuelInterface(GenericInterface):
     @abstractmethod
     def fuel_rate_set(self, rate: float) -> float:
         """Установить номинальный расход топлива"""
-
