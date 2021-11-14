@@ -42,5 +42,5 @@ class FuelInterface(GenericInterface):
         """Получить номинальный расход топлива"""
 
     @abstractmethod
-    def fuel_rate_set(self, rate: float) -> float:
+    def fuel_rate_set(self, rate: float) -> None:
         """Установить номинальный расход топлива"""

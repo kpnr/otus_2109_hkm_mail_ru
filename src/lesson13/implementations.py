@@ -47,11 +47,29 @@ class CheckFuelCommand(GenericCommand):
         MetricVectorInterface._assert_support(movement)
         super().__init__((vehicle, movement))
 
-    def execute(self) -> None:
+    def _fuel_expense_get(self) -> float:
+        """Получить фактический расход топлива"""
         vehicle, movement = self.receiver
         length = cast(MetricVectorInterface, movement).length()
         f_rate = cast(FuelInterface, vehicle).fuel_rate_get()
+        rv = f_rate * length
+        return rv
+
+    def execute(self) -> None:
+        """Контроль досаточности топлива"""
+        vehicle, _ = self.receiver
         f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
-        if f_quantity < f_rate * length:
+        if f_quantity < self._fuel_expense_get():
             raise CommandException(self)
         # Проверка уровня топлива прошла
+
+
+class BurnFuelCommand(CheckFuelCommand):
+    """Израсходовать топливо"""
+
+    def execute(self) -> None:
+        """Уничтожение топлива для перехода"""
+        vehicle, _ = self.receiver
+        f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
+        f_quantity -= self._fuel_expense_get()
+        cast(FuelInterface, vehicle).fuel_quantity_set(f_quantity)

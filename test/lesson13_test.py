@@ -1,12 +1,14 @@
 """Тесты для урока № 13"""
 
 from typing import Callable, cast
-from pytest import raises
+from pytest import raises, approx
 from lesson3.interfaces import GenericCommand
 from lesson3.implementations import Tank
 from lesson13.interfaces import FuelInterface
 from lesson13.implementations import (
-    CommandException, MacroCommand, CheckFuelCommand, LinearVector2)
+    CommandException, MacroCommand, CheckFuelCommand, BurnFuelCommand,
+    LinearVector2)
+
 
 class CallbackCommand(GenericCommand):
     """Тестовая команда-callback"""
@@ -14,13 +16,14 @@ class CallbackCommand(GenericCommand):
         super().__init__(receiver)
 
     def execute(self) -> None:
+        """Выполнить обратный вызов"""
         self.receiver()
 
 
 def test_CommandException():
     """Проверим структуру CommandException"""
+    cmd = CallbackCommand(lambda: None)
     try:
-        cmd = CallbackCommand(lambda: None)
         raise CommandException(cmd)
     except CommandException as e:
         assert e.command is cmd and len(e.args) == 1 and e.args[0] is cmd
@@ -45,17 +48,21 @@ def test_MacroCommand():
 class Vehicle(FuelInterface):
     """Тестовая "машинка" для проверки уровня топлива"""
 
+    def __init__(self):
+        self.fuel_quantity = 10.0
+        self.fuel_rate = 2.0
+
     def fuel_quantity_get(self) -> float:
-        return 10.0
+        return self.fuel_quantity
 
     def fuel_quantity_set(self, quantity: float) -> None:
-        pass
+        self.fuel_quantity = quantity
 
     def fuel_rate_get(self) -> float:
-        return 2.0
+        return self.fuel_rate
 
-    def fuel_rate_set(self, rate: float) -> float:
-        pass
+    def fuel_rate_set(self, rate: float) -> None:
+        self.fuel_rate = rate
 
 
 def test_CheckFuelCommand_ok():
@@ -68,7 +75,7 @@ def test_CheckFuelCommand_ok():
 
 
 def test_CheckFuelCommand_fail():
-    """Тест выполнения для достаточного уровня топлива"""
+    """Тест выполнения для недостаточного уровня топлива"""
     movement = LinearVector2(3.01, 4.0)  # Перемещение более 5 единиц
     vehicle = Tank()
     vehicle.absorb(Vehicle())
@@ -76,3 +83,12 @@ def test_CheckFuelCommand_fail():
     with raises(CommandException):
         cmd.execute()
 
+
+def test_BurnFuelCommand():
+    """Тест на расход топлива"""
+    movement = LinearVector2(3.0, 4.0)  # Перемещение 5 единиц
+    vehicle = Tank()
+    vehicle.absorb(Vehicle())
+    cmd = BurnFuelCommand(cast(FuelInterface, vehicle), movement)
+    cmd.execute()
+    assert cast(FuelInterface, vehicle).fuel_quantity_get() == approx(0.0)
