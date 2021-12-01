@@ -70,7 +70,7 @@ def test_CheckFuelCommand_ok():
     movement = LinearVector2(3.0, 4.0)  # Перемещение ровно на 5 единиц
     vehicle = Tank()
     vehicle.absorb(Vehicle())
-    cmd = CheckFuelCommand(cast(FuelInterface, vehicle), movement)
+    cmd = CheckFuelCommand((cast(FuelInterface, vehicle), movement))
     cmd.execute()
 
 
@@ -79,7 +79,7 @@ def test_CheckFuelCommand_fail():
     movement = LinearVector2(3.01, 4.0)  # Перемещение более 5 единиц
     vehicle = Tank()
     vehicle.absorb(Vehicle())
-    cmd = CheckFuelCommand(cast(FuelInterface, vehicle), movement)
+    cmd = CheckFuelCommand((cast(FuelInterface, vehicle), movement))
     with raises(CommandException):
         cmd.execute()
 
@@ -89,7 +89,7 @@ def test_BurnFuelCommand():
     movement = LinearVector2(3.0, 4.0)  # Перемещение 5 единиц
     vehicle = Tank()
     vehicle.absorb(Vehicle())
-    cmd = BurnFuelCommand(cast(FuelInterface, vehicle), movement)
+    cmd = BurnFuelCommand((cast(FuelInterface, vehicle), movement))
     cmd.execute()
     assert cast(FuelInterface, vehicle).fuel_quantity_get() == approx(0.0)
 
