@@ -1,11 +1,11 @@
 """Тесты для урока № 4"""
 
 from lesson3.interfaces import GenericCommand
-from lesson4.implemetations import (ThreadedAttractorStartCommand,
-                                    AttractorStopHardCommand,
-                                    AttractorStopSoftCommand,
-                                    ThreadedAttractor,
-                                    ThreadedQueue)
+from lesson4.implementations import (ThreadedAttractorStartCommand,
+                                     AttractorStopHardCommand,
+                                     AttractorStopSoftCommand,
+                                     ThreadedAttractor,
+                                     ThreadedQueue)
 from threading import Thread
 from queue import Queue
 
