@@ -1,6 +1,6 @@
 """Реализации интерфейсов/абстракций"""
-
-from typing import Any, Optional, cast
+from abc import ABC
+from typing import Any, Optional, Tuple, cast
 
 from lesson13.interfaces import FuelInterface, MetricVectorInterface
 from lesson3.interfaces import GenericCommand
@@ -12,6 +12,14 @@ class CommandException(Exception):
     def __init__(self, cmd: Optional[GenericCommand]):
         self.command = cmd
         super(CommandException, self).__init__(cmd)
+
+
+class FuelException(CommandException):
+    """Исключение контроля/сжигания топлива"""
+    def __init__(self, cmd: GenericCommand,
+                 fuel_actual: float, fuel_required: float):
+        self.fuel_actual, self.fuel_required = fuel_actual, fuel_required
+        super().__init__(cmd)
 
 
 class LinearVector2(SpaceVector2, MetricVectorInterface):
@@ -40,9 +48,10 @@ class MacroCommand(GenericCommand):
             raise CommandException(x) from e
 
 
-class CheckFuelCommand(GenericCommand):
-    """Проверить кол-во топлива, достаточное для движения"""
-    def __init__(self, vehicle: FuelInterface, movement: MetricVectorInterface):
+class FuelCommand(GenericCommand, ABC):
+    """Базовый класс для проверки и сжигания топлива"""
+    def __init__(self, receiver: Tuple[FuelInterface, MetricVectorInterface]):
+        vehicle, movement = receiver
         FuelInterface._assert_support(vehicle)
         MetricVectorInterface._assert_support(movement)
         super().__init__((vehicle, movement))
@@ -51,35 +60,40 @@ class CheckFuelCommand(GenericCommand):
         """Получить фактический расход топлива"""
         vehicle, movement = self.receiver
         length = cast(MetricVectorInterface, movement).length()
-        f_rate = cast(FuelInterface, vehicle).fuel_rate_get()
-        rv = f_rate * length
+        fuel_rate = cast(FuelInterface, vehicle).fuel_rate_get()
+        rv = fuel_rate * length
         return rv
+
+
+class CheckFuelCommand(FuelCommand):
+    """Проверить кол-во топлива, достаточное для движения"""
 
     def execute(self) -> None:
         """Контроль досаточности топлива"""
         vehicle, _ = self.receiver
-        f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
-        if f_quantity < self._fuel_expense_get():
-            raise CommandException(self)
+        fuel_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
+        fuel_required = self._fuel_expense_get()
+        if fuel_quantity < fuel_required:
+            raise FuelException(self, fuel_quantity, fuel_required)
         # Проверка уровня топлива прошла
 
 
-class BurnFuelCommand(CheckFuelCommand):
+class BurnFuelCommand(FuelCommand):
     """Израсходовать топливо"""
 
     def execute(self) -> None:
         """Уничтожение топлива для перехода"""
         vehicle, _ = self.receiver
-        f_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
-        f_quantity -= self._fuel_expense_get()
-        cast(FuelInterface, vehicle).fuel_quantity_set(f_quantity)
+        fuel_quantity = cast(FuelInterface, vehicle).fuel_quantity_get()
+        fuel_quantity -= self._fuel_expense_get()
+        cast(FuelInterface, vehicle).fuel_quantity_set(fuel_quantity)
 
 
 class StraightMoveWithFuelCommand(MacroCommand):
     """Перемещение по прямой с контролем и расходом топлива"""
     def __init__(self, receiver: Any):
         """:param receiver: перемещаемый объект"""
-        check = CheckFuelCommand(receiver, receiver.direction_get())
+        check = CheckFuelCommand((receiver, receiver.direction_get()))
         move = StraightMoveCommand(receiver)
-        burn = BurnFuelCommand(receiver, receiver.direction_get())
+        burn = BurnFuelCommand((receiver, receiver.direction_get()))
         super().__init__((check, move, burn))
