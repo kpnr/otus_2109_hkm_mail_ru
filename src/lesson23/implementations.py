@@ -2,7 +2,8 @@
 
 from typing import Any, cast, Tuple
 from .interfaces import (
-    GenericCommand, AttractorStateInterface, StatefulAttractorInterface)
+    GenericCommand, AttractorStateInterface, StatefulAttractorInterface,
+    AttractorInterface)
 from lesson4.interfaces import (
     CommandQueueInterface, StopCommandLoop)
 from lesson4.implementations import ThreadedAttractor
@@ -47,7 +48,7 @@ class AttractorStateModifyCommand(GenericCommand):
         if not isinstance(state, AttractorStateInterface):
             raise ValueError('AttractorStateModifyCommand.'
                              'Требуется AttractorStateInterface')
-        super(GenericCommand, self).__init__(receiver)
+        super().__init__(receiver)
 
     def execute(self) -> None:
         """Заменяем состояние у цели"""
@@ -55,6 +56,31 @@ class AttractorStateModifyCommand(GenericCommand):
                 Tuple[StatefulAttractorInterface, AttractorStateInterface],
                 self.receiver)
         attractor.state_set(state)
+
+
+class NoOpCommand(GenericCommand):
+    """Команда-пустышка - ничего не делает"""
+    def execute(self) -> None:
+        """Улыбаемся и мешем"""
+
+
+class YieldCommand(GenericCommand):
+    """Поместить в очередь Аттрактора целевую команду"""
+
+    def __init__(self, receiver: Any):
+        """receiver  - кортеж (Целевой Аттрактор, Целевая команда)"""
+        attractor, command = receiver
+        if not isinstance(attractor, AttractorInterface):
+            raise ValueError('Требуется Аттрактор')
+        if not isinstance(command, GenericCommand):
+            raise ValueError('Требуется команда')
+        super().__init__(receiver)
+
+    def execute(self) -> None:
+        """Поместить в очередь Аттрактора целевую команду"""
+        attractor, command = self.receiver
+        queue = cast(AttractorInterface, attractor).queue_get()
+        queue.write(command)
 
 
 class StopAttractorCommand(MacroCommand):
@@ -67,9 +93,10 @@ class StopAttractorCommand(MacroCommand):
             raise ValueError('StopAttractorCommand.'
                              'Требуется StatefulAttractorInterface')
         state = StopState()
-        state_set_command = AttractorStateModifyCommand((state, attractor))
-        finalize_command = ???
-        super(AttractorStateModifyCommand, self).__init__()
+        state_set_command = AttractorStateModifyCommand((attractor, state,))
+        empty_command = NoOpCommand(None)
+        yield_command = YieldCommand((attractor, empty_command))
+        super().__init__((state_set_command, yield_command))
 
 
 class MoveToCommand(AttractorStateModifyCommand):
@@ -106,7 +133,6 @@ class StatefulAttractor(ThreadedAttractor, StatefulAttractorInterface):
     def __init__(self):
         super(ThreadedAttractor, self).__init__()
         self.state = RunningState()
-
 
     def state_set(self, new_state: AttractorStateInterface) -> None:
         """Запись состояния"""
