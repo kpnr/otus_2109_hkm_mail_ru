@@ -31,7 +31,7 @@ def test_start_command():
     assert isinstance(attractor, Thread)
     assert attractor.is_alive()
     queue.write(cmd)
-    attractor.join(10.0)
+    attractor.join(1.0)
     assert not attractor.is_alive()
 
 
@@ -44,7 +44,7 @@ def test_hard_stop():
     queue.write(cmd)
     attractor.start(queue)
     assert isinstance(attractor, Thread)
-    attractor.join()
+    attractor.join(1.0)
     assert isinstance(queue, Queue)
     assert not queue.empty()
 
@@ -58,7 +58,6 @@ def test_soft_stop():
     queue.write(cmd)
     attractor.start(queue)
     assert isinstance(attractor, Thread)
-    attractor.join()
+    attractor.join(1.0)
     assert isinstance(queue, Queue)
     assert queue.empty()
-
