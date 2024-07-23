@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.webkit.WebViewClientCompat
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 
@@ -79,6 +80,7 @@ fun Greeting() {
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
                     }
+                    w.webViewClient = WebViewClientCompat()
                     w.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                     w.settings.javaScriptEnabled = true
                     w.settings.domStorageEnabled = true
