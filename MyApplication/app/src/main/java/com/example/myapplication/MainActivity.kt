@@ -36,14 +36,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewClientCompat
+import com.appmattus.certificatetransparency.installCertificateTransparencyProvider
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installCertificateTransparencyProvider {
+
+            +"*"
+            failOnError = false
+        }
         setContent {
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
@@ -64,19 +68,12 @@ class MyWebClient : WebViewClient() {
         return false
     }
 
-    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-        Log.d("wv", "onPageStarted $url")
-    }
-
-    override fun onLoadResource(view: WebView?, url: String?) {
-        Log.d("wv", "onLoadResource $url")
-    }
-
     override fun shouldInterceptRequest(
         view: WebView?,
         request: WebResourceRequest?
     ): WebResourceResponse? {
         Log.d("wv", "shouldInterceptRequest ${request?.url}")
+        return null
 //        if (request == null || request.method != "GET" || request.url.scheme != "https") return null
 //        val conn = URL(request.url.toString()).openConnection()
 //        if (conn !is HttpsURLConnection) return null
@@ -197,9 +194,9 @@ fun Greeting() {
                     //     "<!DOCTYPE html><html><head><style>html, body { margin: 0; padding: 0; height: 100%; }</style></head><body><div style='height: 100%; background-color: green;'></div></body><html>"
                     // it.loadDataWithBaseURL(null, HTMLstring, "text/html", "utf-8", null)
                     // it.loadUrl("http://lib.ru/")
-                    // it.loadUrl("https://roskazna.gov.ru/")
+                    w.loadUrl("https://roskazna.gov.ru/")
                     //w.loadUrl("https://10.5.29.158:8087/")
-                    w.loadUrl("https://ccmmp.magnit.ru/")
+                    //w.loadUrl("https://ccmmp.magnit.ru/")
                     w
                 },
                 update = {
