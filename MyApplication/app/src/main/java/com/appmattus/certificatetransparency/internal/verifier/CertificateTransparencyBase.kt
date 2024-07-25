@@ -23,18 +23,12 @@
 package com.appmattus.certificatetransparency.internal.verifier
 
 import com.appmattus.certificatetransparency.CTPolicy
-import com.appmattus.certificatetransparency.SctVerificationResult
 import com.appmattus.certificatetransparency.VerificationResult
 import com.appmattus.certificatetransparency.cache.DiskCache
 import com.appmattus.certificatetransparency.chaincleaner.CertificateChainCleaner
 import com.appmattus.certificatetransparency.chaincleaner.CertificateChainCleanerFactory
 import com.appmattus.certificatetransparency.datasource.DataSource
-import com.appmattus.certificatetransparency.internal.utils.Base64
-import com.appmattus.certificatetransparency.internal.utils.hasEmbeddedSct
-import com.appmattus.certificatetransparency.internal.utils.signedCertificateTimestamps
 import com.appmattus.certificatetransparency.internal.verifier.model.Host
-import kotlinx.coroutines.runBlocking
-import java.io.IOException
 import java.security.KeyStore
 import java.security.cert.Certificate
 import java.security.cert.X509Certificate
@@ -52,15 +46,6 @@ internal open class CertificateTransparencyBase(
     policy: CTPolicy? = null,
     diskCache: DiskCache? = null
 ) {
-    init {
-        includeHosts.forEach {
-            require(!it.matchAll) { "Certificate transparency is enabled by default on all domain names" }
-            require(!excludeHosts.contains(it)) { "Certificate transparency inclusions must not match exclude directly" }
-        }
-
-        require(logListDataSource == null || logListService == null) { "LogListService is ignored when overriding logListDataSource" }
-        require(logListDataSource == null || diskCache == null) { "DiskCache is ignored when overriding logListDataSource" }
-    }
 
     private val cleaner: CertificateChainCleaner by lazy {
         val localTrustManager = trustManager ?: TrustManagerFactory.getInstance(
@@ -71,10 +56,6 @@ internal open class CertificateTransparencyBase(
 
         certificateChainCleanerFactory?.get(localTrustManager) ?: CertificateChainCleaner.get(localTrustManager)
     }
-
-    private val logListDataSource = logListDataSource
-
-    private val policy = (policy ?: DefaultPolicy())
 
     fun verifyCertificateTransparency(host: String, certificates: List<Certificate>): VerificationResult {
         return if (!enabledForCertificateTransparency(host)) {
@@ -104,9 +85,5 @@ internal open class CertificateTransparencyBase(
         return VerificationResult.Success.Trusted(mapOf())
     }
 
-    private fun enabledForCertificateTransparency(host: String) = !excludeHosts.any { it.matches(host) } || includeHosts.any {
-        it.matches(
-            host
-        )
-    }
+    private fun enabledForCertificateTransparency(host: String) = true
 }

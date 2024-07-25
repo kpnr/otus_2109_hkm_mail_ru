@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
 import android.util.Log
@@ -68,41 +67,6 @@ class MyWebClient : WebViewClient() {
         return false
     }
 
-    override fun shouldInterceptRequest(
-        view: WebView?,
-        request: WebResourceRequest?
-    ): WebResourceResponse? {
-        Log.d("wv", "shouldInterceptRequest ${request?.url}")
-        return null
-//        if (request == null || request.method != "GET" || request.url.scheme != "https") return null
-//        val conn = URL(request.url.toString()).openConnection()
-//        if (conn !is HttpsURLConnection) return null
-//        for ((k, v) in request.requestHeaders) {
-//            conn.setRequestProperty(k, v)
-//        }
-//        conn.allowUserInteraction = false
-//        conn.connectTimeout = 3000
-//        conn.readTimeout = 300_000
-//        conn.doInput = true
-//        conn.doOutput = false
-//        conn.connect()
-//        val respCode = conn.responseCode
-//        if(respCode != 200) return null
-//        val respHdrs: MutableMap<String, String> = mutableMapOf()
-//        for ((k: String?, v) in conn.headerFields.entries) {
-//            if(k !is String) continue
-//            respHdrs[k] = v[0]
-//        }
-//        return WebResourceResponse(
-//            conn.contentType,
-//            conn.contentEncoding,
-//            respCode,
-//            conn.responseMessage,
-//            respHdrs,
-//            conn.inputStream
-//        )
-    }
-
     override fun onReceivedError(
         view: WebView?,
         request: WebResourceRequest,
@@ -138,14 +102,6 @@ class MyWebClient : WebViewClient() {
     ) {
         Log.d("wv", "onReceivedSslError $error")
         handler.proceed()
-    }
-
-    override fun onSafeBrowsingHit(
-        view: WebView?, request: WebResourceRequest?,
-        @WebViewClientCompat.SafeBrowsingThreat threatType: Int, callback: SafeBrowsingResponse
-    ) {
-        Log.d("wv", "onSafeBrowsingHit ${request?.url}")
-        callback.proceed(false)
     }
 
 }
@@ -187,15 +143,14 @@ fun Greeting() {
                     w.webViewClient = MyWebClient()
                     w.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                     w.settings.javaScriptEnabled = true
-                    w.settings.safeBrowsingEnabled = false
                     w.settings.domStorageEnabled = true
                     w.settings.useWideViewPort = true
                     // val HTMLstring =
                     //     "<!DOCTYPE html><html><head><style>html, body { margin: 0; padding: 0; height: 100%; }</style></head><body><div style='height: 100%; background-color: green;'></div></body><html>"
                     // it.loadDataWithBaseURL(null, HTMLstring, "text/html", "utf-8", null)
                     // it.loadUrl("http://lib.ru/")
-                    w.loadUrl("https://roskazna.gov.ru/")
-                    //w.loadUrl("https://10.5.29.158:8087/")
+                    //w.loadUrl("https://roskazna.gov.ru/")
+                    w.loadUrl("https://10.5.29.158:8087/?termnum=1&username=KRASN_MO&password=1")
                     //w.loadUrl("https://ccmmp.magnit.ru/")
                     w
                 },

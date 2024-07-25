@@ -34,7 +34,7 @@ import javax.net.ssl.SSLEngine
 import javax.net.ssl.X509ExtendedTrustManager
 import javax.net.ssl.X509TrustManager
 
-@Suppress("LongParameterList", "CustomX509TrustManager", "NewApi")
+@Suppress("LongParameterList", "CustomX509TrustManager")
 internal class CertificateTransparencyTrustManagerExtended(
     private val delegate: X509TrustManager,
     includeHosts: Set<Host>,

@@ -16,6 +16,7 @@
 
 package com.appmattus.certificatetransparency
 
+import android.util.Log
 import com.appmattus.certificatetransparency.cache.DiskCache
 import com.appmattus.certificatetransparency.chaincleaner.CertificateChainCleanerFactory
 import com.appmattus.certificatetransparency.datasource.DataSource
@@ -29,7 +30,7 @@ import javax.net.ssl.X509TrustManager
  * Builder to create a [X509TrustManager] that will verify a certificate is trusted using certificate transparency
  * @property delegate [X509TrustManager] to delegate to before performing certificate transparency checks
  */
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "RedundantVisibilityModifier")
 public class CTTrustManagerBuilder(
     @Suppress("MemberVisibilityCanBePrivate") public val delegate: X509TrustManager
 ) {
@@ -46,7 +47,6 @@ public class CTTrustManagerBuilder(
      */
     public var failOnError: Boolean = true
         @JvmSynthetic get
-
         @JvmSynthetic set
 
     /**
@@ -55,7 +55,6 @@ public class CTTrustManagerBuilder(
      */
     public var logger: CTLogger? = null
         @JvmSynthetic get
-
         @JvmSynthetic set
 
     /**
@@ -64,7 +63,6 @@ public class CTTrustManagerBuilder(
      */
     public var policy: CTPolicy? = null
         @JvmSynthetic get
-
         @JvmSynthetic set
 
     /**
@@ -73,7 +71,6 @@ public class CTTrustManagerBuilder(
      */
     public var diskCache: DiskCache? = null
         @JvmSynthetic get
-
         @JvmSynthetic set
 
     /**
@@ -140,7 +137,8 @@ public class CTTrustManagerBuilder(
      * Default: true
      */
     @Suppress("unused")
-    public fun setFailOnError(failOnError: Boolean): CTTrustManagerBuilder = apply { this.failOnError = failOnError }
+    public fun setFailOnError(failOnError: Boolean): CTTrustManagerBuilder =
+        apply { this.failOnError = failOnError }
 
     /**
      * [CTLogger] which will be called with all results
@@ -160,7 +158,8 @@ public class CTTrustManagerBuilder(
      * Default: none
      */
     @Suppress("unused")
-    public fun setDiskCache(diskCache: DiskCache): CTTrustManagerBuilder = apply { this.diskCache = diskCache }
+    public fun setDiskCache(diskCache: DiskCache): CTTrustManagerBuilder =
+        apply { this.diskCache = diskCache }
 
     /**
      * Verify certificate transparency for common names that match [pattern].
@@ -225,9 +224,8 @@ public class CTTrustManagerBuilder(
     /**
      * Build the [HostnameVerifier]
      */
-    @Suppress("NewApi")
-    public fun build(): X509TrustManager =
-        if (hasExtendedTrustManager) {
+    public fun build(): X509TrustManager {
+        val rv = if (hasExtendedTrustManager) {
             CertificateTransparencyTrustManagerExtended(
                 delegate,
                 includeCommonNames.toSet(),
@@ -254,11 +252,18 @@ public class CTTrustManagerBuilder(
                 logger
             )
         }
+        Log.d("wv", "public fun build(): X509TrustManager")
+        return rv
+    }
 
     public companion object {
         private val hasExtendedTrustManager by lazy {
             try {
-                Class.forName("javax.net.ssl.X509ExtendedTrustManager", false, this::class.java.getClassLoader())
+                Class.forName(
+                    "javax.net.ssl.X509ExtendedTrustManager",
+                    false,
+                    this::class.java.getClassLoader()
+                )
                 true
             } catch (ignored: Exception) {
                 false
