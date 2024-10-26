@@ -1,13 +1,16 @@
 package com.example.myapplication
 
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.Manifest
 import android.net.http.SslError
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.HttpAuthHandler
-import android.webkit.SafeBrowsingResponse
+import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -34,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.webkit.WebViewClientCompat
+import androidx.core.content.PermissionChecker.PERMISSION_DENIED
 import com.appmattus.certificatetransparency.installCertificateTransparencyProvider
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
@@ -58,6 +61,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        if(this.applicationContext.checkSelfPermission("android.permission.CAMERA") == PackageManager.PERMISSION_DENIED)
+            this.requestPermissions(arrayOf(Manifest.permission.CAMERA), 0)
     }
 }
 
@@ -106,6 +111,13 @@ class MyWebClient : WebViewClient() {
 
 }
 
+class MyWebChromeClient : WebChromeClient(){
+    //Разрешить WebView обращаться к "безопасным" API
+    override fun onPermissionRequest(request: PermissionRequest?) {
+        request?.grant(request.resources)
+    }
+}
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun Greeting() {
@@ -145,14 +157,19 @@ fun Greeting() {
                     w.settings.javaScriptEnabled = true
                     w.settings.domStorageEnabled = true
                     w.settings.useWideViewPort = true
+                    //Разрешить WebView обращаться к "безопасным" API
+                    w.settings.mediaPlaybackRequiresUserGesture=false
+                    w.settings.allowFileAccess=true
+                    w.settings.domStorageEnabled=true
+                    w.settings.databaseEnabled=true
+                    w.webChromeClient = MyWebChromeClient()
                     // val HTMLstring =
                     //     "<!DOCTYPE html><html><head><style>html, body { margin: 0; padding: 0; height: 100%; }</style></head><body><div style='height: 100%; background-color: green;'></div></body><html>"
                     // it.loadDataWithBaseURL(null, HTMLstring, "text/html", "utf-8", null)
-                    // it.loadUrl("http://lib.ru/")
+                    //w.loadUrl("http://lib.ru/")
                     //w.loadUrl("https://roskazna.gov.ru/")
                     w.loadUrl("https://10.5.29.158:8087/?termnum=1&username=KRASN_MO&password=1")
                     //w.loadUrl("https://ccmmp.magnit.ru/")
-                    w
                 },
                 update = {
                     webView = it
